@@ -1,0 +1,23 @@
+{
+  "name": "remote-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farm-sia/remote-client.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/farm-sia/remote-client/issues"
+  },
+  "homepage": "https://github.com/farm-sia/remote-client#readme",
+  "dependencies": {
+    "@types/electron": "^1.6.10",
+    "electron": "^17.0.1"
+  }
+}
