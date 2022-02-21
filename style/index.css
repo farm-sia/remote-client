@@ -1,0 +1,11 @@
+.error-txt {
+	color: red;
+}
+
+.confirm-txt {
+	color: green;
+}
+
+#status-txt {
+	display: inline;
+}
