@@ -1,9 +1,15 @@
 var socket = new WebSocket("ws://192.168.178.97:5555")
-//var socket = new WebSocket("ws://172.20.26.190:5555")
+//var socket = new WebSocket("ws://172.20.26.52:5555")
+//var socket = new WebSocket("ws://localhost:5555")
 
-var speed = .5
+var speed = .3
 
 var last_pose
+
+function send(packet, content) {
+	content["packet"] = packet;
+	socket.send(JSON.stringify(content))
+}
 
 socket.onopen = event => {
 	document.addEventListener("keydown", event => {
@@ -11,43 +17,47 @@ socket.onopen = event => {
 			return
 
 		if (event.key == "w") {
-			socket.send("speed " + speed.toString())
+			send("steering", {"speed": speed})
 		} else if (event.key == "s") {
-			socket.send("speed " + (-speed).toString())
+			send("steering", {"speed": -speed})
 		} else if (event.key == "a") {
-			socket.send("direction l")
+			send("steering", {"direction": 'l'})
 		} else if (event.key == "d") {
-			socket.send("direction r")
+			send("steering", {"direction": 'r'})
 		}
 	})
 
 	document.addEventListener("keyup", event => {
 		if (event.key == "w") {
-			socket.send("speed 0")
+			send("steering", {"speed": 0})
 		} else if (event.key == "s") {
-			socket.send("speed 0")
+			send("steering", {"speed": 0})
 		} else if (event.key == "a") {
-			socket.send("direction n")
+			send("steering", {"direction": 'n'})
 		} else if (event.key == "d") {
-			socket.send("direction n")
+			send("steering", {"direction": 'n'})
 		}
 	})
 	$('#status-txt').toggleClass(['error-txt', 'confirm-txt']).html("Connected!")
 }
 
 socket.onmessage = msg => {
-	var content = msg.data.slice(msg.data.indexOf(" ") + 1)
-	var command = msg.data.slice(0, msg.data.indexOf(" "))
-	switch (command) {
-		case "occupancy_grid":
-			render_occupancy_grid(JSON.parse(content))
+	msg = JSON.parse(msg.data)
+	switch (msg.packet) {
+		case "ros_map":
+			render_occupancy_grid(msg)
 			break
-		case "tracked_pose":
-			last_pose = JSON.parse(content).pose
+		case "ros_pose":
+			last_pose = msg.pose
 			break
         default:
             console.log("wrong command")
 	}
+}
+
+function speedChange() {
+	speed = $('#speed-range').val() / 100
+	console.log(speed)
 }
 
 var nav_img = new Image
@@ -84,7 +94,7 @@ function render_occupancy_grid(grid) {
 
 	var icon_x = (((last_pose.position.x - grid.info.origin.position.x) / grid.info.resolution) * scale) - 10
 	var icon_y = (((last_pose.position.y - grid.info.origin.position.y) / grid.info.resolution) * scale) - 10
-	var angle_to_rotate = (-quat_to_euler(last_pose.orientation).yaw - (1/2 + 1/4) * Math.PI) % (2*Math.PI)
+	var angle_to_rotate = (-quat_to_euler(last_pose.orientation).yaw - (3/4) * Math.PI) % (2*Math.PI)
 	
 	ctx.save()
 	ctx.translate(icon_x, icon_y)
