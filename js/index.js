@@ -83,7 +83,7 @@ function render_occupancy_grid(grid) {
 			var g = 255 - val
 			if (val < 0) g = 0
 			ctx.fillStyle = `rgb(${g}, ${g}, ${g})`
-			ctx.fillRect(x * scale, y * scale, scale, scale)
+			ctx.fillRect(x * scale, c_height - (y * scale), scale, scale)
 		}
 	}
 	console.log(grid.info.origin.position)
@@ -94,10 +94,10 @@ function render_occupancy_grid(grid) {
 
 	var icon_x = (((last_pose.position.x - grid.info.origin.position.x) / grid.info.resolution) * scale) - 10
 	var icon_y = (((last_pose.position.y - grid.info.origin.position.y) / grid.info.resolution) * scale) - 10
-	var angle_to_rotate = (-quat_to_euler(last_pose.orientation).yaw - (3/4) * Math.PI) % (2*Math.PI)
+	var angle_to_rotate = (-quat_to_euler(last_pose.orientation).yaw + (1/2) * Math.PI) % (2*Math.PI)
 	
 	ctx.save()
-	ctx.translate(icon_x, icon_y)
+	ctx.translate(icon_x, c_height-icon_y)
 	ctx.rotate(angle_to_rotate)
 	ctx.translate(-10, -10)
 
