@@ -1,10 +1,12 @@
-var socket = new WebSocket("ws://192.168.178.97:5555")
-//var socket = new WebSocket("ws://172.20.26.52:5555")
+//var socket = new WebSocket("ws://192.168.178.97:5555")
+//var socket = new WebSocket("ws://172.20.26.206:5555")
 //var socket = new WebSocket("ws://localhost:5555")
+var socket = new WebSocket("ws://192.168.12.34:5555")
 
 var speed = .3
 
 var last_pose
+var last_map_info
 
 function send(packet, content) {
 	content["packet"] = packet;
@@ -50,6 +52,9 @@ socket.onmessage = msg => {
 		case "ros_pose":
 			last_pose = msg.pose
 			break
+		case "ros_vel":
+			console.log(msg)
+			break
         default:
             console.log("wrong command")
 	}
@@ -57,7 +62,6 @@ socket.onmessage = msg => {
 
 function speedChange() {
 	speed = $('#speed-range').val() / 100
-	console.log(speed)
 }
 
 var nav_img = new Image
@@ -76,7 +80,9 @@ function render_occupancy_grid(grid) {
 		scale = c_width / grid.info.width
 	else
 		scale = c_height / grid.info.height
-	
+	last_map_info = grid.info
+	last_map_info.scale = scale
+
 	for (var y = 0; y < grid.info.height; y++) {
 		for (var x = 0; x < grid.info.width; x++) {
 			var val = grid.data[y * grid.info.width + x]
@@ -86,7 +92,6 @@ function render_occupancy_grid(grid) {
 			ctx.fillRect(x * scale, c_height - (y * scale), scale, scale)
 		}
 	}
-	console.log(grid.info.origin.position)
 	if (!last_pose) {
 		console.error("last pose not yet received, not drawing position")
 		return
@@ -131,3 +136,19 @@ function quat_to_euler(q) {
 
 	return euler
 }
+
+window.onload = () => {
+	$("#map-canvas").click(e => {
+		var c = $("#map-canvas")
+		mouseX = e.pageX - c.offset().left
+    	mouseY = e.pageY - c.offset().top
+		var height = c.height()
+		var width = c.width()
+		
+		var real_x = (mouseX / last_map_info.scale) * last_map_info.resolution + last_map_info.origin.position.x
+		var real_y = (height-mouseY) / last_map_info.scale) * last_map_info.resolution + last_map_info.origin.position.y
+		send("set_goal", {x: real_x, y: real_y})
+	})
+}
+
+
