@@ -146,7 +146,7 @@ window.onload = () => {
 		var width = c.width()
 		
 		var real_x = (mouseX / last_map_info.scale) * last_map_info.resolution + last_map_info.origin.position.x
-		var real_y = (height-mouseY) / last_map_info.scale) * last_map_info.resolution + last_map_info.origin.position.y
+		var real_y = ((height-mouseY) / last_map_info.scale) * last_map_info.resolution + last_map_info.origin.position.y
 		send("set_goal", {x: real_x, y: real_y})
 	})
 }
