@@ -17,30 +17,48 @@ socket.onopen = event => {
 	document.addEventListener("keydown", event => {
 		if (event.repeat)
 			return
-
+		
 		if (event.key == "w") {
-			send("steering", {"speed": speed})
+			key_speed = speed
 		} else if (event.key == "s") {
-			send("steering", {"speed": -speed})
+			key_speed = -speed
 		} else if (event.key == "a") {
-			send("steering", {"direction": 'l'})
+			key_direction = 'l'
 		} else if (event.key == "d") {
-			send("steering", {"direction": 'r'})
+			key_direction = 'r'
 		}
+		update_direction_by_keys()
 	})
 
 	document.addEventListener("keyup", event => {
 		if (event.key == "w") {
-			send("steering", {"speed": 0})
+			key_speed = 0
 		} else if (event.key == "s") {
-			send("steering", {"speed": 0})
+			key_speed = 0
 		} else if (event.key == "a") {
-			send("steering", {"direction": 'n'})
+			key_direction = 'n'
 		} else if (event.key == "d") {
-			send("steering", {"direction": 'n'})
+			key_direction = 'n'
 		}
+		update_direction_by_keys()
 	})
 	$('#status-txt').toggleClass(['error-txt', 'confirm-txt']).html("Connected!")
+}
+
+var key_direction = 'n'
+var key_speed = 0
+function update_direction_by_keys() {
+	var speed_l = key_speed
+	var speed_r = key_speed
+	
+	console.log(speed)
+
+	if (key_direction == 'r') {
+		speed_r *= 0.5
+	} else if (key_direction == 'l') {
+		speed_l *= 0.5
+	}	
+	send("steering", {"r": speed_r, "l": speed_l})
 }
 
 socket.onmessage = msg => {
@@ -53,7 +71,11 @@ socket.onmessage = msg => {
 			last_pose = msg.pose
 			break
 		case "ros_vel":
-			console.log(msg)
+			handle_vel_cmd(msg)
+			break
+		case "goal_reached":
+		case "goal_failed":
+			send("steering", {"speed": 0})
 			break
         default:
             console.log("wrong command")
@@ -62,6 +84,17 @@ socket.onmessage = msg => {
 
 function speedChange() {
 	speed = $('#speed-range').val() / 100
+}
+
+function handle_vel_cmd(msg) {
+	console.log(msg)
+	if (msg.angular.z > 0) {
+		send("steering", {"r": 0.3, "l": -0.3})
+	} else if (msg.angular.z < 0) {
+		send("steering", {"l": 0.3, "r": -0.3})
+	} else {
+		send("steering", {"l": msg.linear.x, "r": msg.linear.x})
+	}
 }
 
 var nav_img = new Image
